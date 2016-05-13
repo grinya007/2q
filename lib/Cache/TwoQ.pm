@@ -2,7 +2,7 @@ package Cache::TwoQ;
 use strict;
 use warnings;
 
-use Storable qw/dclone/;
+use Storable qw/dclone freeze thaw/;
 
 use constant {
     'NAME'  => 0,
@@ -157,6 +157,45 @@ sub _dclone {
     my ($val) = @_;
     return $val unless (ref($val));
     return dclone($val);
+}
+
+sub keys_count {
+    my ($self) = @_;
+    return scalar(keys %{ $self->{'hash_map'} });
+}
+
+sub evict_expired {
+    my ($self) = @_;
+    for my $q (qw/fifo lru/) {
+        my $node = $self->{$q}{'head'};
+        for (1 .. $self->{$q}{'size'}) {
+            if ($node->[EXP] && $node->[EXP] < time()) {
+                delete($self->{'hash_map'}{$node->[KEY]});
+                $node->[KEY] = undef;
+                $node->[VAL] = undef;
+                $node->[EXP] = undef;
+                $self->{$q.'_empty'} = $node unless (
+                    $self->{$q.'_empty'}
+                );
+                $self->{$q}->set_tail($node);
+            }
+            $node = $node->[PREV];
+        }
+    }
+}
+
+sub dump {
+    my ($self) = @_;
+    $self->evict_expired();
+    return freeze($self);
+}
+
+sub load {
+    my ($class, $dump) = @_;
+    die('hey, gimme dump') unless ($dump);
+    my $self = thaw($dump);
+    $self->evict_expired();
+    return $self;
 }
 
 package Cache::TwoQ::CircularBuffer;
