@@ -13,11 +13,12 @@ use constant {
 };
 
 sub new {
-    my ($class, $size) = @_;
+    my ($class, $size, $_fifo_frac) = @_;
     die('gimme size (>= 10) as a single argument') if (
         !$size || $size !~ /^\d+$/ || $size < 10
     );
-    my $fifo_size = int(0.1 * $size);
+    $_fifo_frac ||= 0.1;
+    my $fifo_size = int($_fifo_frac * $size);
     my $self = {};
     $self->{'size'} = $size;
     $self->{'fifo'} = Cache::TwoQ::CircularBuffer->new($fifo_size, 'fifo');
