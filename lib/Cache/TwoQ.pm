@@ -2,6 +2,8 @@ package Cache::TwoQ;
 use strict;
 use warnings;
 
+use Storable qw/dclone/;
+
 use constant {
     'NAME'  => 0,
     'PREV'  => 1,
@@ -93,7 +95,7 @@ sub get {
     # key is in lru
     if ($node->[NAME] eq 'lru') {
         $self->{'lru'}->set_head($node);
-        return $node->[VAL];
+        return _dclone($node->[VAL]);
     }
 
     # key is in fifo and lru has an empty node
@@ -116,7 +118,7 @@ sub get {
             $self->{'lru_empty'} = $lnode->[PREV];
         }
         $self->{'lru'}->set_head($lnode);
-        return $lnode->[VAL];
+        return _dclone($lnode->[VAL]);
     }
 
     # key is in fifo and lru is full
@@ -146,7 +148,15 @@ sub get {
         $node->[EXP] = $lexp;
         $self->{'fifo'}->set_head($node);
     }
-    return $lnode->[VAL];
+    return _dclone($lnode->[VAL]);
+}
+
+# NOTE to insure against caller side modifications
+#   of cached values, all references are wrapped with dclone
+sub _dclone {
+    my ($val) = @_;
+    return $val unless (ref($val));
+    return dclone($val);
 }
 
 package Cache::TwoQ::CircularBuffer;
