@@ -2,7 +2,8 @@
 use strict;
 use warnings;
 
-use lib 'lib';
+use FindBin qw/$RealBin/;
+use lib $RealBin.'/lib';
 
 use Cache::TwoQ;
 use Time::HiRes qw/time/;
