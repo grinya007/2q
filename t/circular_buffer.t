@@ -32,11 +32,9 @@ sub serialize_cb {
     my ($cb) = @_;
     my $res = 'head: '.$cb->{'head'}[KEY].';';
     my $node = $cb->{'head'};
-    my $i = 1;
     for my $i (1 .. $cb->{'size'}) {
         $res .= ' '.$i.': '.$node->[KEY].';';
         $node = $node->[PREV];
-        last if $node == $cb->{'head'};
     }
     return $res;
 }
