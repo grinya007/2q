@@ -20,3 +20,10 @@ worked out 1000000 keys
         memory:         3.547 Mb
         time:           2.998 s
 ```
+Cache::Ref::CAR with everything else being equal does:
+```
+worked out 1000000 keys
+        hit rate:       69.292 %
+        memory:         3.465 Mb
+        time:           12.961 s
+```
